@@ -34,3 +34,8 @@ smtp:
   port: 587
   username: email
   password: app-password
+
+app:
+  queue:
+    email: notification_email_queue
+    inbox: notification_inbox_queue
