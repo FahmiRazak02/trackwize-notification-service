@@ -7,7 +7,7 @@ import java.io.Serial;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class TrackWizeException extends Exception{
+public class TrackWizeException extends RuntimeException{
 
     @Serial
     private static final long serialVersionUID = 1L;
