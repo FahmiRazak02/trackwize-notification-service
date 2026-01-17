@@ -1,6 +1,8 @@
 package com.trackwize.notification.service;
 
+import com.trackwize.common.constant.ErrorConst;
 import com.trackwize.common.constant.NotificationConst;
+import com.trackwize.common.exception.TrackWizeException;
 import com.trackwize.notification.model.dto.NotificationReqDTO;
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
@@ -64,14 +66,44 @@ public class EmailService {
         if (reqDTO.getContents() == null || reqDTO.getContents().isEmpty()) {
             return "";
         }
+        
+        int template = reqDTO.getTemplate();
+        return switch (template) {
+            case NotificationConst.PASSWORD_RESET_TEMPLATE -> resetPasswordContent(reqDTO.getContents());
+            case NotificationConst.ACCOUNT_VERIFICATION_TEMPLATE -> accountVerificationContent(reqDTO.getContents());
+            default -> {
+                log.warn("Unexpected Template Type: [template]{}", template);
+                throw new TrackWizeException(
+                        ErrorConst.INVALID_INPUT_CODE,
+                        ErrorConst.INVALID_INPUT_MSG
+                );
+            }
+        };
 
-        String content = "";
-        switch (reqDTO.getTemplate()) {
-            case NotificationConst.PASSWORD_RESET_TEMPLATE:
-                content =  resetPasswordContent(reqDTO.getContents());
+    }
+
+    private String accountVerificationContent(Map<String, Object> contents) {
+        String title = (String) contents.getOrDefault("title", "Notification");
+        String message = (String) contents.getOrDefault("message", "Please review the details below.");
+        String token = (String) contents.get("token");
+        String name = (String) contents.get("name");
+        String link = "http://localhost:8080/reg/verify-account?token=" + token;
+        String expiry = String.valueOf(contents.getOrDefault("expiry", "30"));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><body>")
+                .append("<h2> Hi! ").append(name).append("</h2>")
+                .append("<h3>").append(title).append("</h3>")
+                .append("<p>").append(message).append("</p>");
+
+        if (token != null && !token.isEmpty()) {
+            sb.append("<p><a href=\"").append(link).append("\">Account Verification</a></p>");
         }
 
-        return content;
+        sb.append("<br><p>This link will expire in ").append(expiry).append(" minutes.</p>")
+                .append("</body></html>");
+
+        return sb.toString();
     }
 
     public String resetPasswordContent(Map<String, Object> contents) {
