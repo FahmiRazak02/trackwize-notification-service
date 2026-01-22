@@ -121,7 +121,7 @@ public class EmailService {
                 .append("<p>").append(message).append("</p>");
 
         if (token != null && !token.isEmpty()) {
-            sb.append("<p><a href=\"").append(link).append("\">Account Created</a></p>");
+            sb.append("<p><a href=\"").append(link).append("\">Click here to verify</a></p>");
         }
 
         sb.append("<br><p>This link will expire in ").append(expiry).append(" minutes.</p>")
